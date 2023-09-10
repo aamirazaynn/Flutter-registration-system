@@ -1,6 +1,8 @@
-import 'package:assignment3/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:assignment3/widgets/widgets.dart';
+import 'package:provider/provider.dart';
+import '../models/entities/user_model.dart';
+import '../providers/user_provider.dart';
 
 class forgetPass extends StatefulWidget {
   forgetPass({super.key});
@@ -15,6 +17,7 @@ class _forgetPassState extends State<forgetPass> {
 
   @override
   Widget build(BuildContext context) {
+    var provider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Reset Password"),
@@ -28,12 +31,27 @@ class _forgetPassState extends State<forgetPass> {
           child: Column(
             children: [
               emailWidget(),
+              passwordWidget(),
+              confirmPasswordWidget(),
               const SizedBox(height: 20),
-              
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (key.currentState!.validate()) {
-                    Navigator.pushReplacementNamed(context, home.id);
+                    String email = emailWidget.getEmail();
+                    String password = passwordWidget.getPassword();
+                    confirmPasswordWidget.resetConfirmPassword();
+                    User? user = await provider.getOneUser(email);
+                    if (email != user?.email || user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("User not found"),
+                      ));
+                    } else {
+                      user.password = password;
+                      provider.edit(user.id!, user);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Password changed successfully"),
+                      ));
+                    }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text("Please complete all the fields")));
@@ -42,7 +60,7 @@ class _forgetPassState extends State<forgetPass> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 59, 89, 152),
                 ),
-                child: const Text("Confirm"),
+                child: const Text("Change Password"),
               ),
             ],
           ),

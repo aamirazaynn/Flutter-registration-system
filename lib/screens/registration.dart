@@ -1,7 +1,9 @@
-import 'package:assignment3/screens/home.dart';
+import 'package:assignment3/providers/user_provider.dart';
 import 'package:assignment3/screens/login.dart';
 import 'package:assignment3/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/entities/user_model.dart';
 
 class registation extends StatefulWidget {
   registation({super.key});
@@ -18,6 +20,7 @@ class _registationState extends State<registation> {
 
   @override
   Widget build(BuildContext context) {
+    var provider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Registration"),
@@ -108,12 +111,33 @@ class _registationState extends State<registation> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (key.currentState!.validate() &&
                       gender != null &&
                       uni != null &&
                       grade != null) {
-                    Navigator.pushReplacementNamed(context, home.id);
+                    String email = emailWidget.getEmail();
+                    String phone = phoneWidget.getPhone();
+                    String password = passwordWidget.getPassword();
+                    User? user = await provider.getOneUser(email);
+                    if (email != user?.email || user == null) {
+                      provider.add(User(
+                        email: email,
+                        password: password,
+                        phone: phone,
+                        gender: gender!,
+                        grade: grade!,
+                        uni: uni!,
+                      ));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("User added successfully"),
+                      ));
+                      Navigator.pushNamed(context, login.id);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("This email already exists"),
+                      ));
+                    }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text("Please complete all the fields")));

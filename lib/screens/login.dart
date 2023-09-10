@@ -1,6 +1,10 @@
 import 'package:assignment3/screens/forgetPass.dart';
 import 'package:flutter/material.dart';
 import 'package:assignment3/screens/home.dart';
+import 'package:provider/provider.dart';
+import '../models/entities/user_model.dart';
+import '../models/handler/shared_preference_handler.dart';
+import '../providers/user_provider.dart';
 import '../widgets/widgets.dart';
 
 class login extends StatefulWidget {
@@ -16,6 +20,7 @@ class _loginState extends State<login> {
 
   @override
   Widget build(BuildContext context) {
+    var provider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Login"),
@@ -31,11 +36,28 @@ class _loginState extends State<login> {
               emailWidget(),
               passwordWidget(),
               const SizedBox(height: 20),
-              
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (key.currentState!.validate()) {
-                    Navigator.pushReplacementNamed(context, home.id);
+                    String email = emailWidget.getEmail();
+                    String password = passwordWidget.getPassword();
+                    User? user = await provider.getOneUser(email);
+                    if (email != user?.email || user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("User not found"),
+                      ));
+                    } else {
+                      if (password == user.password) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
+                          content: Text("User Logged in successfully"),
+                        ));
+                        await SharedPreferencesHandler()
+                            .saveEmailToPreferences(email);
+                        Navigator.pushNamedAndRemoveUntil(
+                            context, home.id, (route) => false);
+                      }
+                    }
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text("Please complete all the fields")));
@@ -46,7 +68,6 @@ class _loginState extends State<login> {
                 ),
                 child: const Text("Login"),
               ),
-
               TextButton(
                   onPressed: () {
                     Navigator.pushNamed(context, forgetPass.id);

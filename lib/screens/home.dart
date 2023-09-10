@@ -1,4 +1,9 @@
+import 'package:assignment3/models/handler/shared_preference_handler.dart';
+import 'package:assignment3/screens/registration.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/entities/user_model.dart';
+import '../providers/user_provider.dart';
 
 class home extends StatefulWidget {
   home({super.key});
@@ -15,7 +20,55 @@ class _homeState extends State<home> {
 
   @override
   Widget build(BuildContext context) {
+    var provider = Provider.of<UserProvider>(context);
+    Future<String?> email =
+        SharedPreferencesHandler().getEmailFromPreferences();
     return Scaffold(
+      drawer: Drawer(
+        child: FutureBuilder(
+            future: email,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text(snapshot.error.toString()),
+                );
+              } else if (snapshot.hasData) {
+                return Column(children: [
+                  UserAccountsDrawerHeader(
+                    accountName: Text(
+                      snapshot.data.toString()[0].toUpperCase() +
+                          snapshot.data.toString().substring(
+                              1, snapshot.data.toString().indexOf("@")),
+                    ),
+                    accountEmail: Text(snapshot.data.toString()),
+                    currentAccountPicture: const CircleAvatar(
+                      child: Icon(Icons.person),
+                    ),
+                  ),
+                  TextButton(
+                      onPressed: () async {
+                        await SharedPreferencesHandler().deleteEmailFromPreferences();
+                        Navigator.pushReplacementNamed(context, registation.id);
+                      },
+                      child: const Text("Logout")),
+                  TextButton(
+                      onPressed: () async {
+                        User? user =
+                            await provider.getOneUser(snapshot.data.toString());
+                        provider.delete(user!.id!);
+                        await SharedPreferencesHandler().deleteEmailFromPreferences();
+                        Navigator.pushReplacementNamed(context, registation.id);
+                      },
+                      child: const Text("Remove My Account")),
+                ]);
+              }
+              return const Center(
+                child: Text("No data"),
+              );
+            }),
+      ),
       appBar: AppBar(
         title: const Text("Home"),
         centerTitle: true,
@@ -86,7 +139,6 @@ class _homeState extends State<home> {
                     ]),
                   ],
                 )),
-            
             Container(
                 margin: const EdgeInsets.only(bottom: 20),
                 height: 160,
@@ -148,7 +200,6 @@ class _homeState extends State<home> {
                     ]),
                   ],
                 )),
-            
             Container(
                 margin: const EdgeInsets.only(bottom: 20),
                 height: 160,
@@ -210,7 +261,6 @@ class _homeState extends State<home> {
                     ]),
                   ],
                 )),
-            
             ElevatedButton(
               onPressed: () {
                 if (q1 != null && q2 != null && q3 != null) {

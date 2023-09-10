@@ -2,11 +2,13 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 
 class emailWidget extends StatelessWidget {
+  static TextEditingController email = TextEditingController();
   emailWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: email,
       keyboardType: TextInputType.emailAddress,
       decoration: const InputDecoration(
         hintText: "example@gmail.com",
@@ -23,14 +25,22 @@ class emailWidget extends StatelessWidget {
       },
     );
   }
+
+  static String getEmail() {
+    String e = email.text;
+    email.text = "";
+    return e;
+  }
 }
 
 class phoneWidget extends StatelessWidget {
+  static TextEditingController phone = TextEditingController();
   phoneWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: phone,
       keyboardType: TextInputType.phone,
       decoration: const InputDecoration(
         hintText: "01234567899",
@@ -44,12 +54,25 @@ class phoneWidget extends StatelessWidget {
       },
     );
   }
+
+  static String getPhone() {
+    String p = phone.text;
+    phone.text = "";
+    return p;
+  }
 }
 
 String? pass;
 
 class passwordWidget extends StatefulWidget {
   passwordWidget({super.key});
+  static TextEditingController password = TextEditingController();
+
+  static String getPassword() {
+    String p = password.text;
+    password.text = "";
+    return p;
+  }
 
   @override
   State<passwordWidget> createState() => _passwordWidgetState();
@@ -61,6 +84,7 @@ class _passwordWidgetState extends State<passwordWidget> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: passwordWidget.password,
       obscureText: show,
       keyboardType: TextInputType.name,
       decoration: InputDecoration(
@@ -86,6 +110,10 @@ class _passwordWidgetState extends State<passwordWidget> {
 
 class confirmPasswordWidget extends StatefulWidget {
   const confirmPasswordWidget({super.key});
+  static TextEditingController password = TextEditingController();
+  static void resetConfirmPassword() {
+    password.text = "";
+  }
 
   @override
   State<confirmPasswordWidget> createState() => _confirmPasswordWidgetState();
@@ -97,6 +125,7 @@ class _confirmPasswordWidgetState extends State<confirmPasswordWidget> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: confirmPasswordWidget.password,
       obscureText: show,
       keyboardType: TextInputType.name,
       decoration: InputDecoration(
@@ -109,6 +138,9 @@ class _confirmPasswordWidgetState extends State<confirmPasswordWidget> {
               },
               icon: const Icon(Icons.remove_red_eye_outlined))),
       validator: (value) {
+        if (value.toString().isEmpty) {
+          return "You must confirm your password";
+        }
         if (value.toString() != pass) {
           return "Password Doesn't Match";
         } else {
